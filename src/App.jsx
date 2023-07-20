@@ -14,7 +14,7 @@ function App() {
 
   useEffect(() => {
     setInterval(() => {
-      fetch("http://localhost:9000/messages", {
+      fetch(`${import.meta.process.env.VITE_MESSAGING_API}/messages`, {
         method: "GET",
       })
         .then((res) => {
@@ -38,7 +38,7 @@ function App() {
       username: usernameInput,
     };
 
-    fetch("http://localhost:9000/messages", {
+    fetch(`${import.meta.process.env.VITE_MESSAGING_API}/messages`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -78,13 +78,16 @@ function App() {
 
   const finishEditingAndSaveChangesInServer = () => {
     setEditingId(null);
-    fetch(`http://localhost:9000/messages/${editingId}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ content: temporaryEditingContent }),
-    })
+    fetch(
+      `${import.meta.process.env.VITE_MESSAGING_API}/messages/${editingId}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ content: temporaryEditingContent }),
+      }
+    )
       .then((res) => {
         if (!res.ok) {
           throw new Error(
@@ -105,7 +108,7 @@ function App() {
 
   // DELETE MESSAGE
   const handleDelete = (id) => {
-    fetch(`http://localhost:9000/messages/${id}`, {
+    fetch(`${import.meta.process.env.VITE_MESSAGING_API}/messages/${id}`, {
       method: "DELETE",
     }).then((response) => {
       if (response.ok && response.status === 204) {
