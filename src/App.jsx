@@ -10,14 +10,24 @@ function App() {
   const [editingId, setEditingId] = useState(null);
   const [temporaryEditingContent, setTemporaryEditingContent] = useState(""); // TEMPORARY STATE FOR EDITING
 
+  const [error, setError] = useState(null);
+
   useEffect(() => {
     setInterval(() => {
       fetch("http://localhost:9000/messages", {
         method: "GET",
       })
-        .then((res) => res.json())
-        .then((data) => setMessages(data));
-    }, [1000]);
+        .then((res) => {
+          if (!res.ok) {
+            throw new Error(
+              `Something is wrong with polling messages request ${res.status} ${res.statusText}`
+            );
+          }
+          return res.json();
+        })
+        .then((data) => setMessages(data))
+        .catch((error) => setError(error.message));
+    }, 1000);
   }, []);
 
   const handleSubmit = (e) => {
@@ -35,11 +45,19 @@ function App() {
       },
       body: JSON.stringify(message),
     })
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(
+            `Something is wrong with creating submit request ${res.status} ${res.statusText}`
+          );
+        }
+        return res.json();
+      })
       .then((data) => {
         console.log("new Document received from server", data);
         setMessages([...messages, data]);
-      });
+      })
+      .catch((error) => setError(error.message));
   };
 
   // PUT MESSAGE
@@ -67,14 +85,22 @@ function App() {
       },
       body: JSON.stringify({ content: temporaryEditingContent }),
     })
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(
+            `Something is wrong with sending editing request ${res.status} ${res.statusText}`
+          );
+        }
+        return res.json();
+      })
       .then((updatedMessageFromBackend) => {
         setMessages(
           messages.map((message) =>
             message.id === editingId ? updatedMessageFromBackend : message
           )
         );
-      });
+      })
+      .catch((error) => setError(error));
   };
 
   // DELETE MESSAGE
@@ -84,11 +110,16 @@ function App() {
     }).then((response) => {
       if (response.ok && response.status === 204) {
         setMessages(messages.filter((message) => message.id !== id));
+      } else {
+        setError(
+          `Something went Wrong with deleting message ${response.status} ${response.statusText}`
+        );
       }
     });
   };
   return (
     <>
+      {error && <h2>{error}</h2>}
       <h1>editingId: {editingId ? editingId : "null"}</h1>
       {messages
         .sort((a, b) => a.created_at - b.created_at)
