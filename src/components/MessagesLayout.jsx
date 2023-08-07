@@ -161,7 +161,7 @@ const MessagesLayout = () => {
       </div>
       <div className="top-[25%] bottom-[25%]   h-[50%] fixed inset-0 overflow-y-auto p-10">
         {messages
-          .sort((a, b) => a.created_at - b.created_at)
+          .sort((a, b) => a.createdAt - b.createdAt)
           .map((message) => {
             return (
               <div key={message.id} className=" ">
